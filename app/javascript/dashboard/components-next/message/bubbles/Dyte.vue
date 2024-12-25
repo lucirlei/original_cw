@@ -5,16 +5,23 @@ import { buildDyteURL } from 'shared/helpers/IntegrationHelper';
 import { useCamelCase } from 'dashboard/composables/useTransformKeys';
 import { useAlert } from 'dashboard/composables';
 import { useI18n } from 'vue-i18n';
-
-import { useMessageContext } from '../provider.js';
 import BaseAttachmentBubble from './BaseAttachment.vue';
 
-const { contentAttributes } = useMessageContext();
+const props = defineProps({
+  contentAttributes: {
+    type: String,
+    required: true,
+  },
+  sender: {
+    type: Object,
+    default: () => ({}),
+  },
+});
 
 const { t } = useI18n();
 
 const meetingData = computed(() => {
-  return useCamelCase(contentAttributes.value.data);
+  return useCamelCase(props.contentAttributes.data);
 });
 
 const isLoading = ref(false);
@@ -50,6 +57,7 @@ const action = computed(() => ({
   <BaseAttachmentBubble
     icon="i-ph-video-camera-fill"
     icon-bg-color="bg-[#2781F6]"
+    :sender="sender"
     sender-translation-key="CONVERSATION.SHARED_ATTACHMENT.MEETING"
     :action="action"
   >

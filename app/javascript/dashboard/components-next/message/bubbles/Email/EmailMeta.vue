@@ -1,44 +1,57 @@
 <script setup>
 import { computed } from 'vue';
 import { MESSAGE_STATUS } from '../../constants';
-import { useMessageContext } from '../../provider.js';
 
-const { contentAttributes, status, sender } = useMessageContext();
+const props = defineProps({
+  contentAttributes: {
+    type: Object,
+    default: () => ({}),
+  },
+  status: {
+    type: String,
+    required: true,
+    validator: value => Object.values(MESSAGE_STATUS).includes(value),
+  },
+  sender: {
+    type: Object,
+    default: () => ({}),
+  },
+});
 
 const hasError = computed(() => {
-  return status.value === MESSAGE_STATUS.FAILED;
+  return props.status === MESSAGE_STATUS.FAILED;
 });
 
 const fromEmail = computed(() => {
-  return contentAttributes.value?.email?.from ?? [];
+  return props.contentAttributes?.email?.from ?? [];
 });
 
 const toEmail = computed(() => {
-  return contentAttributes.value?.email?.to ?? [];
+  return props.contentAttributes?.email?.to ?? [];
 });
 
 const ccEmail = computed(() => {
   return (
-    contentAttributes.value?.ccEmails ??
-    contentAttributes.value?.email?.cc ??
+    props.contentAttributes?.ccEmails ??
+    props.contentAttributes?.email?.cc ??
     []
   );
 });
 
 const senderName = computed(() => {
-  return sender.value.name ?? '';
+  return props.sender.name ?? '';
 });
 
 const bccEmail = computed(() => {
   return (
-    contentAttributes.value?.bccEmails ??
-    contentAttributes.value?.email?.bcc ??
+    props.contentAttributes?.bccEmails ??
+    props.contentAttributes?.email?.bcc ??
     []
   );
 });
 
 const subject = computed(() => {
-  return contentAttributes.value?.email?.subject ?? '';
+  return props.contentAttributes?.email?.subject ?? '';
 });
 
 const showMeta = computed(() => {
@@ -55,7 +68,7 @@ const showMeta = computed(() => {
 <template>
   <section
     v-show="showMeta"
-    class="space-y-1 pr-9 border-b border-n-strong text-sm"
+    class="p-4 space-y-1 pr-9 border-b border-n-strong"
     :class="hasError ? 'text-n-ruby-11' : 'text-n-slate-11'"
   >
     <template v-if="showMeta">
