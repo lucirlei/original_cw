@@ -4,12 +4,12 @@
 # # and when tags are created.
 # #
 
-name: Publish Chatwoot CE docker images for ARM64
+name: Publish Chatwoot CE docker images
 on:
   push:
     branches:
-      - develop
-      - master
+      - main
+      #- uno
     tags:
       - v*
   workflow_dispatch:
@@ -17,7 +17,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    #runs-on: self-hosted
     env:
       GIT_REF: ${{ github.head_ref || github.ref_name }} # ref_name to get tags/branches
     steps:
@@ -30,27 +29,46 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Strip enterprise code
+        run: |
+              rm -rf enterprise
+              rm -rf spec/enterprise
+
+      # - name: Set Chatwoot edition
+      #   run: |
+      #     echo -en '\nENV CW_EDITION="ce"' >> docker/Dockerfile
 
       - name: set docker tag
         run: |
-          echo "DOCKER_ARM_TAG=sendingtk/chatwoot-arm:$GIT_REF" >> $GITHUB_ENV
+          echo "DOCKER_TAG=lucirleisantos/original_cw:$GIT_REF" >> $GITHUB_ENV
+          echo "DOCKER_ARM_TAG=lucirleisantos/original_cw-arm:$GIT_REF" >> $GITHUB_ENV
 
       - name: replace docker tag if master
         if: github.ref_name == 'master'
         run: |
-          echo "DOCKER_ARM_TAG=sendingtk/chatwoot-arm:latest" >> $GITHUB_ENV
+          echo "DOCKER_TAG=lucirleisantos/chatwoot:latest" >> $GITHUB_ENV
+          echo "DOCKER_ARM_TAG=lucirleisantos/chatwoot:latest" >> $GITHUB_ENV
 
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
-      - name: Build and push arm64 image
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.DOCKER_TAG }}
+
+      - name: Build and push arm64
         uses: docker/build-push-action@v2
         with:
           context: .
           file: docker/Dockerfile
           platforms: linux/arm64
-          push: true
+          push: false
           tags: ${{ env.DOCKER_ARM_TAG }}
