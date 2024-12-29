@@ -86,11 +86,11 @@
   enabled: false
   premium: true
 - name: linear_integration
-  enabled: false
+  enabled: true
 - name: captain_integration
-  enabled: false
+  enabled: true
 - name: custom_roles
   enabled: false
   premium: true
 - name: chatwoot_v4
-  enabled: false
+  enabled: true
