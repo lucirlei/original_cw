@@ -66,10 +66,10 @@
 - name: custom_reply_domain
   enabled: true
 - name: audit_logs
-  enabled: true
+  enabled: false
   premium: true
 - name: response_bot
-  enabled: true
+  enabled: false
   premium: true
 - name: message_reply_to
   enabled: true
@@ -79,7 +79,7 @@
 - name: inbox_view
   enabled: true
 - name: sla
-  enabled: true
+  enabled: false
   premium: true
   help_url: https://chwt.app/hc/sla
 - name: help_center_embedding_search
@@ -90,7 +90,7 @@
 - name: captain_integration
   enabled: false
 - name: custom_roles
-  enabled: true
+  enabled: false
   premium: true
 - name: chatwoot_v4
   enabled: false
