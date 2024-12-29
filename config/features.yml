@@ -66,10 +66,10 @@
 - name: custom_reply_domain
   enabled: true
 - name: audit_logs
-  enabled: false
+  enabled: true
   premium: true
 - name: response_bot
-  enabled: false
+  enabled: true
   premium: true
 - name: message_reply_to
   enabled: true
@@ -86,11 +86,11 @@
   enabled: false
   premium: true
 - name: linear_integration
-  enabled: true
+  enabled: false
 - name: captain_integration
-  enabled: true
+  enabled: false
 - name: custom_roles
   enabled: false
   premium: true
 - name: chatwoot_v4
-  enabled: true
+  enabled: false
