@@ -66,10 +66,10 @@
 - name: custom_reply_domain
   enabled: true
 - name: audit_logs
-  enabled: true
+  enabled: false
   premium: true
 - name: response_bot
-  enabled: true
+  enabled: false
   premium: true
 - name: message_reply_to
   enabled: true
