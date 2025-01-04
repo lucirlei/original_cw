@@ -27,8 +27,7 @@ checks:
       threshold: 50
 exclude_patterns:
   - 'spec/'
-  - '**/specs/**/**'
-  - '**/spec/**/**'
+  - '**/specs/'
   - 'db/*'
   - 'bin/**/*'
   - 'db/**/*'
@@ -57,5 +56,3 @@ exclude_patterns:
   - 'app/javascript/shared/constants/locales.js'
   - 'app/javascript/dashboard/helper/specs/macrosFixtures.js'
   - 'app/javascript/dashboard/routes/dashboard/settings/macros/constants.js'
-  - '**/fixtures/**'
-  - '**/*/fixtures.js'

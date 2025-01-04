@@ -33,12 +33,8 @@ class IntegrationsAPI extends ApiClient {
     return axios.delete(`${this.baseUrl()}/integrations/hooks/${hookId}`);
   }
 
-  requestCaptain(body) {
-    return axios.post(`${this.baseUrl()}/integrations/captain/proxy`, body);
-  }
-
-  requestCaptainCopilot(body) {
-    return axios.post(`${this.baseUrl()}/integrations/captain/copilot`, body);
+  fetchCaptainURL() {
+    return axios.get(`${this.baseUrl()}/integrations/captain/sso_url`);
   }
 }
 

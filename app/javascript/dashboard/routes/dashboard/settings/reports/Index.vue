@@ -1,13 +1,11 @@
 <script>
-import V4Button from 'dashboard/components-next/button/Button.vue';
-import { useAlert, useTrack } from 'dashboard/composables';
+import { useAlert } from 'dashboard/composables';
 import fromUnixTime from 'date-fns/fromUnixTime';
 import format from 'date-fns/format';
 import ReportFilterSelector from './components/FilterSelector.vue';
 import { GROUP_BY_FILTER } from './constants';
 import { REPORTS_EVENTS } from '../../../../helper/AnalyticsHelper/events';
 import ReportContainer from './ReportContainer.vue';
-import ReportHeader from './components/ReportHeader.vue';
 
 const REPORTS_KEYS = {
   CONVERSATIONS: 'conversations_count',
@@ -22,10 +20,8 @@ const REPORTS_KEYS = {
 export default {
   name: 'ConversationReports',
   components: {
-    ReportHeader,
     ReportFilterSelector,
     ReportContainer,
-    V4Button,
   },
   data() {
     return {
@@ -92,7 +88,7 @@ export default {
       this.businessHours = businessHours;
       this.fetchAllData();
 
-      useTrack(REPORTS_EVENTS.FILTER_REPORT, {
+      this.$track(REPORTS_EVENTS.FILTER_REPORT, {
         filterValue: { from, to, groupBy, businessHours },
         reportType: 'conversations',
       });
@@ -102,19 +98,19 @@ export default {
 </script>
 
 <template>
-  <ReportHeader :header-title="$t('REPORT.HEADER')">
-    <V4Button
-      :label="$t('REPORT.DOWNLOAD_AGENT_REPORTS')"
-      icon="i-ph-download-simple"
-      size="sm"
+  <div class="flex-1 p-4 overflow-auto">
+    <woot-button
+      color-scheme="success"
+      class-names="button--fixed-top"
+      icon="arrow-download"
       @click="downloadAgentReports"
-    />
-  </ReportHeader>
-  <div class="flex flex-col gap-3">
+    >
+      {{ $t('REPORT.DOWNLOAD_AGENT_REPORTS') }}
+    </woot-button>
     <ReportFilterSelector
       :show-agents-filter="false"
       show-group-by-filter
-      @filter-change="onFilterChange"
+      @filterChange="onFilterChange"
     />
     <ReportContainer :group-by="groupBy" />
   </div>

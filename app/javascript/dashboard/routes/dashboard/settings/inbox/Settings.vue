@@ -16,6 +16,7 @@ import ConfigurationPage from './settingsPage/ConfigurationPage.vue';
 import CollaboratorsPage from './settingsPage/CollaboratorsPage.vue';
 import WidgetBuilder from './WidgetBuilder.vue';
 import BotConfiguration from './components/BotConfiguration.vue';
+import UnoapiConfiguration from './settingsPage/UnoapiConfiguration.vue';
 import { FEATURE_FLAGS } from '../../../../featureFlags';
 import SenderNameExamplePreview from './components/SenderNameExamplePreview.vue';
 
@@ -33,6 +34,7 @@ export default {
     WidgetBuilder,
     SenderNameExamplePreview,
     MicrosoftReauthorize,
+    UnoapiConfiguration,
     GoogleReauthorize,
   },
   mixins: [inboxMixin],
@@ -47,6 +49,7 @@ export default {
       greetingMessage: '',
       emailCollectEnabled: false,
       csatSurveyEnabled: false,
+      csatResponseVisible: false,
       senderNameType: 'friendly',
       businessName: '',
       locktoSingleConversation: false,
@@ -62,6 +65,7 @@ export default {
       selectedTabIndex: 0,
       selectedPortalSlug: '',
       showBusinessNameInput: false,
+      externalToken: '',
     };
   },
   computed: {
@@ -83,6 +87,9 @@ export default {
       }
       if (this.isATwilioWhatsAppChannel) {
         return this.$t('INBOX_MGMT.ADD.WHATSAPP.PROVIDERS.TWILIO');
+      }
+      if (this.isAUnoapiChannel) {
+        return this.$t('INBOX_MGMT.ADD.WHATSAPP.PROVIDERS.UNOAPI');
       }
       return '';
     },
@@ -116,15 +123,26 @@ export default {
         ];
       }
 
+      if (this.isAUnoapiChannel) {
+        visibleToAllChannelTabs = [
+          ...visibleToAllChannelTabs,
+          {
+            key: 'unoApiConfiguration',
+            name: this.$t('INBOX_MGMT.TABS.UNOAPI_CONFIGURATION'),
+          },
+        ];
+      }
+
       if (
-        this.isATwilioChannel ||
-        this.isALineChannel ||
-        this.isAPIInbox ||
-        (this.isAnEmailChannel && !this.inbox.provider) ||
-        this.isAMicrosoftInbox ||
-        this.isAGoogleInbox ||
-        this.isAWhatsAppChannel ||
-        this.isAWebWidgetInbox
+        (this.isATwilioChannel ||
+          this.isALineChannel ||
+          this.isAPIInbox ||
+          (this.isAnEmailChannel && !this.inbox.provider) ||
+          this.isAMicrosoftInbox ||
+          this.isAGoogleInbox ||
+          this.isAWhatsAppChannel ||
+          this.isAWebWidgetInbox) &&
+        !this.isAUnoapiChannel
       ) {
         visibleToAllChannelTabs = [
           ...visibleToAllChannelTabs,
@@ -175,10 +193,7 @@ export default {
     },
     canLocktoSingleConversation() {
       return (
-        this.isASmsInbox ||
-        this.isAWhatsAppChannel ||
-        this.isAFacebookInbox ||
-        this.isAPIInbox
+        this.isASmsInbox || this.isAWhatsAppChannel || this.isAFacebookInbox || this.isAPIInbox
       );
     },
     inboxNameLabel() {
@@ -217,6 +232,9 @@ export default {
         (this.isAGoogleInbox || isLegacyInbox) &&
         this.inbox.reauthorization_required
       );
+    },
+    isWavoipFeatureEnabled() {
+      return this.isFeatureEnabledonAccount(this.accountId, FEATURE_FLAGS.WAVOIP);
     },
   },
   watch: {
@@ -260,10 +278,12 @@ export default {
         this.avatarUrl = this.inbox.avatar_url;
         this.selectedInboxName = this.inbox.name;
         this.webhookUrl = this.inbox.webhook_url;
+        this.externalToken = this.inbox.external_token;
         this.greetingEnabled = this.inbox.greeting_enabled || false;
         this.greetingMessage = this.inbox.greeting_message || '';
         this.emailCollectEnabled = this.inbox.enable_email_collect;
         this.csatSurveyEnabled = this.inbox.csat_survey_enabled;
+        this.csatResponseVisible = this.inbox.csat_response_visible;
         this.senderNameType = this.inbox.sender_name_type;
         this.businessName = this.inbox.business_name;
         this.allowMessagesAfterResolved =
@@ -287,6 +307,7 @@ export default {
           name: this.selectedInboxName,
           enable_email_collect: this.emailCollectEnabled,
           csat_survey_enabled: this.csatSurveyEnabled,
+          csat_response_visible: this.csatResponseVisible,
           allow_messages_after_resolved: this.allowMessagesAfterResolved,
           greeting_enabled: this.greetingEnabled,
           greeting_message: this.greetingMessage || '',
@@ -298,6 +319,7 @@ export default {
           lock_to_single_conversation: this.locktoSingleConversation,
           sender_name_type: this.senderNameType,
           business_name: this.businessName || null,
+          external_token: this.externalToken || '',
           channel: {
             widget_color: this.inbox.widget_color,
             website_url: this.channelWebsiteUrl,
@@ -307,6 +329,7 @@ export default {
             selectedFeatureFlags: this.selectedFeatureFlags,
             reply_time: this.replyTime || 'in_a_few_minutes',
             continuity_via_email: this.continuityViaEmail,
+            external_token: this.externalToken || '',
           },
         };
         if (this.avatarFile) {
@@ -356,6 +379,7 @@ export default {
       shouldBeUrl,
     },
     selectedInboxName: {},
+    externalToken: {},
   },
 };
 </script>
@@ -375,9 +399,8 @@ export default {
         @change="onTabChange"
       >
         <woot-tabs-item
-          v-for="(tab, index) in tabs"
+          v-for="tab in tabs"
           :key="tab.key"
-          :index="index"
           :name="tab.name"
           :show-badge="false"
         />
@@ -398,11 +421,11 @@ export default {
           :src="avatarUrl"
           class="pb-4"
           delete-avatar
-          @on-avatar-select="handleImageUpload"
-          @on-avatar-delete="handleAvatarDelete"
+          @change="handleImageUpload"
+          @onAvatarDelete="handleAvatarDelete"
         />
         <woot-input
-          v-model="selectedInboxName"
+          v-model.trim="selectedInboxName"
           class="w-3/4 pb-4"
           :class="{ error: v$.selectedInboxName.$error }"
           :label="inboxNameLabel"
@@ -416,7 +439,7 @@ export default {
         />
         <woot-input
           v-if="isAPIInbox"
-          v-model="webhookUrl"
+          v-model.trim="webhookUrl"
           class="w-3/4 pb-4"
           :class="{ error: v$.webhookUrl.$error }"
           :label="
@@ -433,8 +456,17 @@ export default {
           @blur="v$.webhookUrl.$touch"
         />
         <woot-input
+          v-if="isAPIInbox && isWavoipFeatureEnabled"
+          v-model.trim="externalToken"
+          class="w-3/4 pb-4"
+          :label="$t('INBOX_MGMT.SETTINGS_POPUP.EXTERNAL_TOKEN')"
+          :placeholder="
+            $t('INBOX_MGMT.SETTINGS_POPUP.EXTERNAL_TOKEN_PLACEHOLDER')
+          "
+        />
+        <woot-input
           v-if="isAWebWidgetInbox"
-          v-model="channelWebsiteUrl"
+          v-model.trim="channelWebsiteUrl"
           class="w-3/4 pb-4"
           :label="$t('INBOX_MGMT.ADD.WEBSITE_CHANNEL.CHANNEL_DOMAIN.LABEL')"
           :placeholder="
@@ -443,7 +475,7 @@ export default {
         />
         <woot-input
           v-if="isAWebWidgetInbox"
-          v-model="channelWelcomeTitle"
+          v-model.trim="channelWelcomeTitle"
           class="w-3/4 pb-4"
           :label="
             $t('INBOX_MGMT.ADD.WEBSITE_CHANNEL.CHANNEL_WELCOME_TITLE.LABEL')
@@ -457,7 +489,7 @@ export default {
 
         <woot-input
           v-if="isAWebWidgetInbox"
-          v-model="channelWelcomeTagline"
+          v-model.trim="channelWelcomeTagline"
           class="w-3/4 pb-4"
           :label="
             $t('INBOX_MGMT.ADD.WEBSITE_CHANNEL.CHANNEL_WELCOME_TAGLINE.LABEL')
@@ -509,7 +541,7 @@ export default {
         </label>
         <div v-if="greetingEnabled" class="pb-4">
           <GreetingsEditor
-            v-model="greetingMessage"
+            v-model.trim="greetingMessage"
             :label="
               $t(
                 'INBOX_MGMT.ADD.WEBSITE_CHANNEL.CHANNEL_GREETING_MESSAGE.LABEL'
@@ -575,6 +607,21 @@ export default {
           </select>
           <p class="pb-1 text-sm not-italic text-slate-600 dark:text-slate-400">
             {{ $t('INBOX_MGMT.SETTINGS_POPUP.ENABLE_CSAT_SUB_TEXT') }}
+          </p>
+        </label>
+
+        <label v-if="csatSurveyEnabled" class="w-3/4 pb-4">
+          {{ $t('INBOX_MGMT.SETTINGS_POPUP.CSAT_VISIBLE') }}
+          <select v-model="csatResponseVisible">
+            <option :value="true">
+              {{ $t('INBOX_MGMT.EDIT.CSAT_VISIBLE.ENABLED') }}
+            </option>
+            <option :value="false">
+              {{ $t('INBOX_MGMT.EDIT.CSAT_VISIBLE.DISABLED') }}
+            </option>
+          </select>
+          <p class="pb-1 text-sm not-italic text-slate-600 dark:text-slate-400">
+            {{ $t('INBOX_MGMT.SETTINGS_POPUP.CSAT_VISIBLE_SUB_TEXT') }}
           </p>
         </label>
 
@@ -693,7 +740,7 @@ export default {
             value="use_inbox_avatar_for_bot"
             @input="handleFeatureFlag"
           />
-          <label for="use_inbox_avatar_for_bot">
+          <label for="emoji_picker">
             {{ $t('INBOX_MGMT.FEATURES.USE_INBOX_AVATAR_FOR_BOT') }}
           </label>
         </div>
@@ -782,6 +829,9 @@ export default {
     </div>
     <div v-if="selectedTabKey === 'botConfiguration'">
       <BotConfiguration :inbox="inbox" />
+    </div>
+    <div v-if="selectedTabKey === 'unoApiConfiguration'">
+      <unoapi-configuration :inbox="inbox" />
     </div>
   </div>
 </template>

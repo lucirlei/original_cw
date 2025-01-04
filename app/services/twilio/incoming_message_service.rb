@@ -121,6 +121,7 @@ class Twilio::IncomingMessageService
         content_type: attachment_file.content_type
       }
     )
+
   end
 
   def download_attachment_file

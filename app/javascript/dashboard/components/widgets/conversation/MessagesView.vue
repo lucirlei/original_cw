@@ -1,5 +1,6 @@
 <script>
 import { ref } from 'vue';
+import MessageApi from '../../../api/inbox/message';
 // composable
 import { useConfig } from 'dashboard/composables/useConfig';
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
@@ -18,7 +19,6 @@ import { mapGetters } from 'vuex';
 import inboxMixin, { INBOX_FEATURES } from 'shared/mixins/inboxMixin';
 
 // utils
-import { emitter } from 'shared/helpers/mitt';
 import { getTypingUsersText } from '../../../helper/commons';
 import { calculateScrollTop } from './helpers/scrollTopCalculationHelper';
 import { LocalStorage } from 'shared/helpers/localStorage';
@@ -52,7 +52,6 @@ export default {
       default: false,
     },
   },
-  emits: ['contactPanelToggle'],
   setup() {
     const isPopOutReplyBox = ref(false);
     const { isEnterprise } = useConfig();
@@ -108,6 +107,7 @@ export default {
       currentChat: 'getSelectedChat',
       listLoadingStatus: 'getAllMessagesLoaded',
       currentAccountId: 'getCurrentAccountId',
+      globalConfig: 'globalConfig/get',
     }),
     isOpen() {
       return this.currentChat?.status === wootConstants.STATUS_TYPE.OPEN;
@@ -138,9 +138,10 @@ export default {
     },
     typingUserNames() {
       const userList = this.typingUsersList;
+
       if (this.isAnyoneTyping) {
-        const [i18nKey, params] = getTypingUsersText(userList);
-        return this.$t(i18nKey, params);
+        const userListAsName = getTypingUsersText(userList);
+        return userListAsName;
       }
 
       return '';
@@ -252,12 +253,12 @@ export default {
   },
 
   created() {
-    emitter.on(BUS_EVENTS.SCROLL_TO_MESSAGE, this.onScrollToMessage);
+    this.$emitter.on(BUS_EVENTS.SCROLL_TO_MESSAGE, this.onScrollToMessage);
     // when a new message comes in, we refetch the label suggestions
-    emitter.on(BUS_EVENTS.FETCH_LABEL_SUGGESTIONS, this.fetchSuggestions);
+    this.$emitter.on(BUS_EVENTS.FETCH_LABEL_SUGGESTIONS, this.fetchSuggestions);
     // when a message is sent we set the flag to true this hides the label suggestions,
     // until the chat is changed and the flag is reset in the watch for currentChat
-    emitter.on(BUS_EVENTS.MESSAGE_SENT, () => {
+    this.$emitter.on(BUS_EVENTS.MESSAGE_SENT, () => {
       this.messageSentSinceOpened = true;
     });
   },
@@ -268,7 +269,7 @@ export default {
     this.fetchSuggestions();
   },
 
-  unmounted() {
+  beforeDestroy() {
     this.removeBusListeners();
     this.removeScrollListener();
   },
@@ -324,7 +325,7 @@ export default {
       this.$store.dispatch('fetchAllAttachments', this.currentChat.id);
     },
     removeBusListeners() {
-      emitter.off(BUS_EVENTS.SCROLL_TO_MESSAGE, this.onScrollToMessage);
+      this.$emitter.off(BUS_EVENTS.SCROLL_TO_MESSAGE, this.onScrollToMessage);
     },
     onScrollToMessage({ messageId = '' } = {}) {
       this.$nextTick(() => {
@@ -333,6 +334,11 @@ export default {
           this.isProgrammaticScroll = true;
           messageElement.scrollIntoView({ behavior: 'smooth' });
           this.fetchPreviousMessages();
+          messageElement.classList.add('has-bg');
+          const HIGHLIGHT_TIMER = 2000;
+          setTimeout(() => {
+            messageElement.classList.remove('has-bg');
+          }, HIGHLIGHT_TIMER);
         } else {
           this.scrollToBottom();
         }
@@ -429,7 +435,7 @@ export default {
       } else {
         this.hasUserScrolled = true;
       }
-      emitter.emit(BUS_EVENTS.ON_MESSAGE_LIST_SCROLL);
+      this.$emitter.emit(BUS_EVENTS.ON_MESSAGE_LIST_SCROLL);
       this.fetchPreviousMessages(e.target.scrollTop);
     },
 
@@ -437,17 +443,29 @@ export default {
       this.$store.dispatch('markMessagesRead', { id: this.currentChat.id });
     },
 
-    getInReplyToMessage(parentMessage) {
+    async getInReplyToMessage(parentMessage) {
       if (!parentMessage) return {};
       const inReplyToMessageId = parentMessage.content_attributes?.in_reply_to;
       if (!inReplyToMessageId) return {};
 
-      return this.currentChat?.messages.find(message => {
+      let replyToMessage = this.currentChat?.messages.find(message => {
         if (message.id === inReplyToMessageId) {
           return true;
         }
         return false;
       });
+      if (!replyToMessage) {
+        const params = {
+          conversationId: this.currentChat.id,
+          after: inReplyToMessageId - 1,
+          before: inReplyToMessageId + 1,
+        };
+        const {
+          data: { payload },
+        } = await MessageApi.getPreviousMessages(params);
+        replyToMessage = payload[0];
+      }
+      return replyToMessage;
     },
   },
 };
@@ -468,14 +486,15 @@ export default {
         size="tiny"
         color-scheme="secondary"
         class="box-border fixed z-10 bg-white border border-r-0 border-solid rounded-bl-calc rtl:rotate-180 rounded-tl-calc dark:bg-slate-700 border-slate-50 dark:border-slate-600"
-        :class="isInboxView ? 'top-52 md:top-40' : 'top-32'"
+        :class="
+          isInboxView ? 'top-52 md:top-40' : 'top-[9.5rem] md:top-[6.25rem]'
+        "
         :icon="isRightOrLeftIcon"
         @click="onToggleContactPanel"
       />
     </div>
-    <ul class="conversation-panel">
+    <ul class="conversation-panel" :style="globalConfig.conversationStyleCss">
       <transition name="slide-up">
-        <!-- eslint-disable-next-line vue/require-toggle-inside-transition -->
         <li class="min-h-[4rem]">
           <span v-if="shouldShowSpinner" class="spinner message" />
         </li>
@@ -540,15 +559,15 @@ export default {
           {{ typingUserNames }}
           <img
             class="w-6 ltr:ml-2 rtl:mr-2"
-            src="assets/images/typing.gif"
+            src="~dashboard/assets/images/typing.gif"
             alt="Someone is typing"
           />
         </div>
       </div>
       <ReplyBox
-        v-model:popout-reply-box="isPopOutReplyBox"
         :conversation-id="currentChat.id"
-        @toggle-popout="showPopOutReplyBox"
+        :popout-reply-box.sync="isPopOutReplyBox"
+        @click="showPopOutReplyBox"
       />
     </div>
   </div>
@@ -556,7 +575,6 @@ export default {
 
 <style scoped>
 @tailwind components;
-
 @layer components {
   .rounded-bl-calc {
     border-bottom-left-radius: calc(1.5rem + 1px);

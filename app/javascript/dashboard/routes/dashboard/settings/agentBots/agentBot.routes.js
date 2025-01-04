@@ -1,8 +1,8 @@
-import Bot from './Index.vue';
-import CsmlEditBot from './csml/Edit.vue';
-import CsmlNewBot from './csml/New.vue';
+const Bot = () => import('./Index.vue');
+const CsmlEditBot = () => import('./csml/Edit.vue');
+const CsmlNewBot = () => import('./csml/New.vue');
 import { frontendURL } from '../../../../helper/URLHelper';
-import SettingsContent from '../Wrapper.vue';
+const SettingsContent = () => import('../Wrapper.vue');
 
 export default {
   routes: [

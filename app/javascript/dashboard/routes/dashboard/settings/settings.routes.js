@@ -11,6 +11,7 @@ import attributes from './attributes/attributes.routes';
 import automation from './automation/automation.routes';
 import auditlogs from './auditlogs/audit.routes';
 import billing from './billing/billing.routes';
+import campaigns from './campaigns/campaigns.routes';
 import canned from './canned/canned.routes';
 import inbox from './inbox/inbox.routes';
 import integrations from './integrations/integrations.routes';
@@ -31,15 +32,14 @@ export default {
       meta: {
         permissions: [...ROLES, ...CONVERSATION_PERMISSIONS],
       },
-      redirect: to => {
+      redirect: () => {
         if (
           store.getters.getCurrentRole === 'administrator' &&
           store.getters.getCurrentCustomRoleId === null
         ) {
-          return { name: 'general_settings_index', params: to.params };
+          return frontendURL('accounts/:accountId/settings/general');
         }
-
-        return { name: 'canned_list', params: to.params };
+        return frontendURL('accounts/:accountId/settings/canned-response');
       },
     },
     ...account.routes,
@@ -49,6 +49,7 @@ export default {
     ...automation.routes,
     ...auditlogs.routes,
     ...billing.routes,
+    ...campaigns.routes,
     ...canned.routes,
     ...inbox.routes,
     ...integrations.routes,

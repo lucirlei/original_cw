@@ -9,13 +9,13 @@ import SocialIcons from './SocialIcons.vue';
 import EditContact from './EditContact.vue';
 import NewConversation from './NewConversation.vue';
 import ContactMergeModal from 'dashboard/modules/contact/ContactMergeModal.vue';
+import { getCountryFlag } from 'dashboard/helper/flag';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
 import {
   isAConversationRoute,
   isAInboxViewRoute,
   getConversationDashboardRoute,
 } from '../../../../helper/routeHelpers';
-import { emitter } from 'shared/helpers/mitt';
 
 export default {
   components: {
@@ -44,7 +44,6 @@ export default {
       default: 'chevron-right',
     },
   },
-  emits: ['togglePanel', 'panelClose'],
   setup() {
     const { isAdmin } = useAdmin();
     return {
@@ -84,11 +83,11 @@ export default {
       const {
         social_profiles: socialProfiles,
         screen_name: twitterScreenName,
-        social_telegram_user_name: telegramUsername,
       } = this.additionalAttributes;
+
       return {
         twitter: twitterScreenName,
-        telegram: telegramUsername,
+        phone: this.contact.phone_number,
         ...(socialProfiles || {}),
       };
     },
@@ -99,6 +98,9 @@ export default {
   },
   methods: {
     dynamicTime,
+    toggleMergeModal() {
+      this.showMergeModal = !this.showMergeModal;
+    },
     toggleEditModal() {
       this.showEditModal = !this.showEditModal;
     },
@@ -107,7 +109,7 @@ export default {
     },
     toggleConversationModal() {
       this.showConversationModal = !this.showConversationModal;
-      emitter.emit(
+      this.$emitter.emit(
         BUS_EVENTS.NEW_CONVERSATION_MODAL,
         this.showConversationModal
       );
@@ -126,12 +128,8 @@ export default {
     },
     findCountryFlag(countryCode, cityAndCountry) {
       try {
-        if (!countryCode) {
-          return `${cityAndCountry} 🌎`;
-        }
-
-        const code = countryCode?.toLowerCase();
-        return `${cityAndCountry} <span class="fi fi-${code} size-3.5"></span>`;
+        const countryFlag = countryCode ? getCountryFlag(countryCode) : '🌎';
+        return `${cityAndCountry} ${countryFlag}`;
       } catch (error) {
         return '';
       }
@@ -163,18 +161,15 @@ export default {
         );
       }
     },
-    closeMergeModal() {
-      this.showMergeModal = false;
-    },
     openMergeModal() {
-      this.showMergeModal = true;
+      this.toggleMergeModal();
     },
   },
 };
 </script>
 
 <template>
-  <div class="relative items-center w-full p-4">
+  <div class="relative items-center w-full p-4 bg-white dark:bg-slate-900">
     <div class="flex flex-col w-full gap-2 text-left rtl:text-right">
       <div class="flex flex-row justify-between">
         <Thumbnail
@@ -324,12 +319,12 @@ export default {
         v-if="showMergeModal"
         :primary-contact="contact"
         :show="showMergeModal"
-        @close="closeMergeModal"
+        @close="toggleMergeModal"
       />
     </div>
     <woot-delete-modal
       v-if="showDeleteModal"
-      v-model:show="showDeleteModal"
+      :show.sync="showDeleteModal"
       :on-close="closeDelete"
       :on-confirm="confirmDeletion"
       :title="$t('DELETE_CONTACT.CONFIRM.TITLE')"

@@ -3,8 +3,8 @@ import {
   ROLES,
   CONVERSATION_PERMISSIONS,
 } from 'dashboard/constants/permissions.js';
-import SettingsWrapper from '../SettingsWrapper.vue';
-import CannedHome from './Index.vue';
+const SettingsWrapper = () => import('../SettingsWrapper.vue');
+const CannedHome = () => import('./Index.vue');
 
 export default {
   routes: [
@@ -14,9 +14,7 @@ export default {
       children: [
         {
           path: '',
-          redirect: to => {
-            return { name: 'canned_list', params: to.params };
-          },
+          redirect: 'list',
         },
         {
           path: 'list',

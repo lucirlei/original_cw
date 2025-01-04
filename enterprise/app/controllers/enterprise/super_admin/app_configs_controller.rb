@@ -2,7 +2,7 @@ module Enterprise::SuperAdmin::AppConfigsController
   private
 
   def allowed_configs
-    return super if ChatwootHub.pricing_plan == 'community'
+    # return super if ChatwootHub.pricing_plan == 'community'
 
     case @config
     when 'custom_branding'
@@ -28,6 +28,7 @@ module Enterprise::SuperAdmin::AppConfigsController
       TERMS_URL
       PRIVACY_URL
       DISPLAY_MANIFEST
+      CONVERSATION_STYLE_CSS
     ]
   end
 

@@ -1,3 +1,4 @@
+/* eslint-disable storybook/default-exports */
 import { frontendURL } from '../../helper/URLHelper';
 import {
   ROLES,
@@ -5,7 +6,7 @@ import {
   CONTACT_PERMISSIONS,
 } from 'dashboard/constants/permissions.js';
 
-import SearchView from './components/SearchView.vue';
+const SearchView = () => import('./components/SearchView.vue');
 
 export const routes = [
   {

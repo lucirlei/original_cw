@@ -29,11 +29,11 @@ const trendColor = (value, key) => {
 </script>
 
 <template>
-  <div class="text-n-slate-11">
+  <div class="text-slate-900 dark:text-slate-100">
     <span class="text-sm">
       {{ metric.NAME }}
     </span>
-    <div class="flex items-end text-n-slate-12">
+    <div class="flex items-end">
       <div class="text-xl font-medium">
         {{ displayMetric(metric.KEY) }}
       </div>

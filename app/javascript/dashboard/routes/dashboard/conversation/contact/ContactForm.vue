@@ -4,8 +4,8 @@ import {
   DuplicateContactException,
   ExceptionWithMessage,
 } from 'shared/helpers/CustomErrors';
-import { required, email } from '@vuelidate/validators';
 import { useVuelidate } from '@vuelidate/core';
+import { required, email } from '@vuelidate/validators';
 import countries from 'shared/constants/countries.js';
 import { isPhoneNumberValid } from 'shared/helpers/Validators';
 import parsePhoneNumber from 'libphonenumber-js';
@@ -25,7 +25,6 @@ export default {
       default: () => {},
     },
   },
-  emits: ['cancel', 'success'],
   setup() {
     return { v$: useVuelidate() };
   },
@@ -50,12 +49,20 @@ export default {
         twitter: '',
         linkedin: '',
         github: '',
+        instagram: '',
+        line: '',
+        telegram: '',
+        website: '',
       },
       socialProfileKeys: [
-        { key: 'facebook', prefixURL: 'https://facebook.com/' },
-        { key: 'twitter', prefixURL: 'https://twitter.com/' },
-        { key: 'linkedin', prefixURL: 'https://linkedin.com/' },
-        { key: 'github', prefixURL: 'https://github.com/' },
+      	{ key: 'facebook', label: 'https://facebook.com/' },
+        { key: 'twitter', label: 'https://twitter.com/' },
+        { key: 'linkedin', label: 'https://linkedin.com/' },
+        { key: 'github', label: 'https://github.com/' },
+        { key: 'instagram', label: 'https://instagram.com/' },
+        { key: 'line', label: 'Line User Id ' },
+        { key: 'telegram', label: 'Telegram Username ' },
+        { key: 'website', label: 'Website: https://' },
       ],
     };
   },
@@ -167,6 +174,9 @@ export default {
         linkedin: socialProfiles.linkedin || '',
         github: socialProfiles.github || '',
         instagram: socialProfiles.instagram || '',
+        line: socialProfiles.line || '',
+        telegram: socialProfiles.telegram || '',
+        website: socialProfiles.website || '',
       };
     },
     getContactObject() {
@@ -200,6 +210,9 @@ export default {
         contactObject.isFormData = true;
       }
       return contactObject;
+    },
+    onPhoneNumberInputChange(value, code) {
+      this.activeDialCode = code;
     },
     setPhoneCode(code) {
       if (this.phoneNumber !== '' && this.parsePhoneNumber) {
@@ -278,8 +291,8 @@ export default {
           :username-avatar="name"
           :delete-avatar="!!avatarUrl"
           class="settings-item"
-          @on-avatar-select="handleImageUpload"
-          @on-avatar-delete="handleAvatarDelete"
+          @change="handleImageUpload"
+          @onAvatarDelete="handleAvatarDelete"
         />
       </div>
     </div>
@@ -288,7 +301,7 @@ export default {
         <label :class="{ error: v$.name.$error }">
           {{ $t('CONTACT_FORM.FORM.NAME.LABEL') }}
           <input
-            v-model="name"
+            v-model.trim="name"
             type="text"
             :placeholder="$t('CONTACT_FORM.FORM.NAME.PLACEHOLDER')"
             @input="v$.name.$touch"
@@ -298,7 +311,7 @@ export default {
         <label :class="{ error: v$.email.$error }">
           {{ $t('CONTACT_FORM.FORM.EMAIL_ADDRESS.LABEL') }}
           <input
-            v-model="email"
+            v-model.trim="email"
             type="text"
             :placeholder="$t('CONTACT_FORM.FORM.EMAIL_ADDRESS.PLACEHOLDER')"
             @input="v$.email.$touch"
@@ -313,7 +326,7 @@ export default {
       <label :class="{ error: v$.description.$error }">
         {{ $t('CONTACT_FORM.FORM.BIO.LABEL') }}
         <textarea
-          v-model="description"
+          v-model.trim="description"
           type="text"
           :placeholder="$t('CONTACT_FORM.FORM.BIO.PLACEHOLDER')"
           @input="v$.description.$touch"
@@ -333,8 +346,9 @@ export default {
             :value="phoneNumber"
             :error="isPhoneNumberNotValid"
             :placeholder="$t('CONTACT_FORM.FORM.PHONE_NUMBER.PLACEHOLDER')"
+            @input="onPhoneNumberInputChange"
             @blur="v$.phoneNumber.$touch"
-            @set-code="setPhoneCode"
+            @setCode="setPhoneCode"
           />
           <span v-if="isPhoneNumberNotValid" class="message">
             {{ phoneNumberError }}
@@ -349,7 +363,7 @@ export default {
       </div>
     </div>
     <woot-input
-      v-model="companyName"
+      v-model.trim="companyName"
       class="w-full"
       :label="$t('CONTACT_FORM.FORM.COMPANY_NAME.LABEL')"
       :placeholder="$t('CONTACT_FORM.FORM.COMPANY_NAME.PLACEHOLDER')"
@@ -391,9 +405,8 @@ export default {
       >
         <span
           class="flex items-center h-10 px-2 text-sm border-solid bg-slate-50 border-y ltr:border-l rtl:border-r ltr:rounded-l-md rtl:rounded-r-md dark:bg-slate-700 text-slate-800 dark:text-slate-100 border-slate-200 dark:border-slate-600"
+          >{{ socialProfile.label }}</span
         >
-          {{ socialProfile.prefixURL }}
-        </span>
         <input
           v-model="socialProfileUserNames[socialProfile.key]"
           class="input-group-field ltr:!rounded-l-none rtl:rounded-r-none !mb-0"

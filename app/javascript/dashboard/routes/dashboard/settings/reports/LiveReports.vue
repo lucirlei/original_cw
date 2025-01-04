@@ -9,22 +9,17 @@ import endOfDay from 'date-fns/endOfDay';
 import getUnixTime from 'date-fns/getUnixTime';
 import startOfDay from 'date-fns/startOfDay';
 import subDays from 'date-fns/subDays';
-import { emitter } from 'shared/helpers/mitt';
-import ReportHeader from './components/ReportHeader.vue';
 
 export default {
   name: 'LiveReports',
   components: {
-    ReportHeader,
     AgentTable,
     MetricCard,
     ReportHeatmap,
   },
   data() {
     return {
-      // always start with 0, this is to manage the pagination in tanstack table
-      // when we send the data, we do a +1 to this value
-      pageIndex: 0,
+      pageIndex: 1,
     };
   },
   computed: {
@@ -61,7 +56,7 @@ export default {
     this.$store.dispatch('agents/get');
     this.fetchAllData();
 
-    emitter.on('fetch_overview_reports', () => {
+    this.$emitter.on('fetch_overview_reports', () => {
       this.fetchAllData();
     });
   },
@@ -113,7 +108,7 @@ export default {
     fetchAgentConversationMetric() {
       this.$store.dispatch('fetchAgentConversationMetric', {
         type: 'agent',
-        page: this.pageIndex + 1,
+        page: this.pageIndex,
       });
     },
     onPageNumberChange(pageIndex) {
@@ -125,9 +120,8 @@ export default {
 </script>
 
 <template>
-  <ReportHeader :header-title="$t('OVERVIEW_REPORTS.HEADER')" />
-  <div class="flex flex-col gap-4 pb-6">
-    <div class="flex flex-col items-center md:flex-row gap-4">
+  <div class="flex-1 p-4 overflow-auto">
+    <div class="flex flex-col items-center md:flex-row">
       <div
         class="flex-1 w-full max-w-full md:w-[65%] md:max-w-[65%] conversation-metric"
       >
@@ -141,14 +135,12 @@ export default {
           <div
             v-for="(metric, name, index) in conversationMetrics"
             :key="index"
-            class="flex-1 min-w-0 pb-2"
+            class="flex-1 min-w-0 metric-content"
           >
-            <h3 class="text-base text-n-slate-11">
+            <h3 class="heading">
               {{ name }}
             </h3>
-            <p class="text-n-slate-12 text-3xl mb-0 mt-1">
-              {{ metric }}
-            </p>
+            <p class="metric">{{ metric }}</p>
           </div>
         </MetricCard>
       </div>
@@ -157,19 +149,17 @@ export default {
           <div
             v-for="(metric, name, index) in agentStatusMetrics"
             :key="index"
-            class="flex-1 min-w-0 pb-2"
+            class="flex-1 min-w-0 metric-content"
           >
-            <h3 class="text-base text-n-slate-11">
+            <h3 class="heading">
               {{ name }}
             </h3>
-            <p class="text-n-slate-12 text-3xl mb-0 mt-1">
-              {{ metric }}
-            </p>
+            <p class="metric">{{ metric }}</p>
           </div>
         </MetricCard>
       </div>
     </div>
-    <div class="flex flex-row flex-wrap max-w-full">
+    <div class="flex flex-row flex-wrap max-w-full ml-auto mr-auto">
       <MetricCard :header="$t('OVERVIEW_REPORTS.CONVERSATION_HEATMAP.HEADER')">
         <template #control>
           <woot-button
@@ -188,14 +178,14 @@ export default {
         />
       </MetricCard>
     </div>
-    <div class="flex flex-row flex-wrap max-w-full">
+    <div class="flex flex-row flex-wrap max-w-full ml-auto mr-auto">
       <MetricCard :header="$t('OVERVIEW_REPORTS.AGENT_CONVERSATIONS.HEADER')">
         <AgentTable
           :agents="agents"
           :agent-metrics="agentConversationMetric"
           :page-index="pageIndex"
           :is-loading="uiFlags.isFetchingAgentConversationMetric"
-          @page-change="onPageNumberChange"
+          @pageChange="onPageNumberChange"
         />
       </MetricCard>
     </div>

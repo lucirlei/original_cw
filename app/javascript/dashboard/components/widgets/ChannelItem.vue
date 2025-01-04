@@ -12,7 +12,6 @@ export default {
       required: true,
     },
   },
-  emits: ['channelItemClick'],
   computed: {
     hasFbConfigured() {
       return window.chatwootConfig?.fbAppId;
@@ -30,6 +29,21 @@ export default {
       }
       if (key === 'email') {
         return this.enabledFeatures.channel_email;
+      }
+      if (key === 'sms') {
+        return this.enabledFeatures.channel_sms;
+      }
+      if (key === 'whatsapp') {
+        return this.enabledFeatures.channel_whatsapp;
+      }
+      if (key === 'telegram') {
+        return this.enabledFeatures.channel_telegram;
+      }
+      if (key === 'line') {
+        return this.enabledFeatures.channel_line;
+      }
+      if (key === 'api') {
+        return this.enabledFeatures.channel_api;
       }
 
       return [

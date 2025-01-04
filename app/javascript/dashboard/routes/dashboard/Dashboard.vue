@@ -1,30 +1,17 @@
 <script>
-import { mapGetters } from 'vuex';
-import { defineAsyncComponent } from 'vue';
-
-import NextSidebar from 'next/sidebar/Sidebar.vue';
 import Sidebar from '../../components/layout/Sidebar.vue';
+import { BUS_EVENTS } from 'shared/constants/busEvents';
 import WootKeyShortcutModal from 'dashboard/components/widgets/modal/WootKeyShortcutModal.vue';
 import AddAccountModal from 'dashboard/components/layout/sidebarComponents/AddAccountModal.vue';
 import AccountSelector from 'dashboard/components/layout/sidebarComponents/AccountSelector.vue';
 import AddLabelModal from 'dashboard/routes/dashboard/settings/labels/AddLabel.vue';
 import NotificationPanel from 'dashboard/routes/dashboard/notifications/components/NotificationPanel.vue';
-
 import { useUISettings } from 'dashboard/composables/useUISettings';
-import { useAccount } from 'dashboard/composables/useAccount';
-
 import wootConstants from 'dashboard/constants/globals';
-import { BUS_EVENTS } from 'shared/constants/busEvents';
-import { FEATURE_FLAGS } from 'dashboard/featureFlags';
-
-const CommandBar = defineAsyncComponent(
-  () => import('./commands/commandbar.vue')
-);
-import { emitter } from 'shared/helpers/mitt';
+const CommandBar = () => import('./commands/commandbar.vue');
 
 export default {
   components: {
-    NextSidebar,
     Sidebar,
     CommandBar,
     WootKeyShortcutModal,
@@ -35,12 +22,10 @@ export default {
   },
   setup() {
     const { uiSettings, updateUISettings } = useUISettings();
-    const { accountId } = useAccount();
 
     return {
       uiSettings,
       updateUISettings,
-      accountId,
     };
   },
   data() {
@@ -51,13 +36,9 @@ export default {
       showShortcutModal: false,
       isNotificationPanel: false,
       displayLayoutType: '',
-      hasBanner: '',
     };
   },
   computed: {
-    ...mapGetters({
-      isFeatureEnabledonAccount: 'accounts/isFeatureEnabledonAccount',
-    }),
     currentRoute() {
       return ' ';
     },
@@ -75,12 +56,6 @@ export default {
       const { previously_used_sidebar_view: showSecondarySidebar } =
         this.uiSettings;
       return showSecondarySidebar;
-    },
-    showNextSidebar() {
-      return this.isFeatureEnabledonAccount(
-        this.accountId,
-        FEATURE_FLAGS.CHATWOOT_V4
-      );
     },
   },
   watch: {
@@ -100,22 +75,15 @@ export default {
   },
   mounted() {
     this.handleResize();
-    this.$nextTick(this.checkBanner);
     window.addEventListener('resize', this.handleResize);
-    window.addEventListener('resize', this.checkBanner);
-    emitter.on(BUS_EVENTS.TOGGLE_SIDEMENU, this.toggleSidebar);
+    this.$emitter.on(BUS_EVENTS.TOGGLE_SIDEMENU, this.toggleSidebar);
   },
-  unmounted() {
+  beforeDestroy() {
     window.removeEventListener('resize', this.handleResize);
-    window.removeEventListener('resize', this.checkBanner);
-    emitter.off(BUS_EVENTS.TOGGLE_SIDEMENU, this.toggleSidebar);
+    this.$emitter.off(BUS_EVENTS.TOGGLE_SIDEMENU, this.toggleSidebar);
   },
 
   methods: {
-    checkBanner() {
-      this.hasBanner =
-        document.getElementsByClassName('woot-banner').length > 0;
-    },
     handleResize() {
       const { SMALL_SCREEN_BREAKPOINT, LAYOUT_TYPES } = wootConstants;
       let throttled = false;
@@ -174,39 +142,32 @@ export default {
 </script>
 
 <template>
-  <div class="flex flex-wrap app-wrapper dark:text-slate-300">
-    <NextSidebar
-      v-if="showNextSidebar"
-      @toggle-account-modal="toggleAccountModal"
-      @open-key-shortcut-modal="toggleKeyShortcutModal"
-      @close-key-shortcut-modal="closeKeyShortcutModal"
-      @show-create-account-modal="openCreateAccountModal"
-    />
+  <div
+    class="flex flex-wrap flex-grow-0 w-full h-full max-w-full min-h-0 ml-auto mr-auto app-wrapper dark:text-slate-300"
+  >
     <Sidebar
-      v-else
       :route="currentRoute"
-      :has-banner="hasBanner"
       :show-secondary-sidebar="isSidebarOpen"
-      @open-notification-panel="openNotificationPanel"
-      @toggle-account-modal="toggleAccountModal"
-      @open-key-shortcut-modal="toggleKeyShortcutModal"
-      @close-key-shortcut-modal="closeKeyShortcutModal"
-      @show-add-label-popup="showAddLabelPopup"
+      @openNotificationPanel="openNotificationPanel"
+      @toggleAccountModal="toggleAccountModal"
+      @openKeyShortcutModal="toggleKeyShortcutModal"
+      @closeKeyShortcutModal="closeKeyShortcutModal"
+      @showAddLabelPopup="showAddLabelPopup"
     />
-    <main class="flex flex-1 h-full min-h-0 px-0 overflow-hidden">
+    <section class="flex flex-1 h-full min-h-0 px-0 overflow-hidden">
       <router-view />
       <CommandBar />
       <AccountSelector
         :show-account-modal="showAccountModal"
-        @close-account-modal="toggleAccountModal"
-        @show-create-account-modal="openCreateAccountModal"
+        @closeAccountModal="toggleAccountModal"
+        @showCreateAccountModal="openCreateAccountModal"
       />
       <AddAccountModal
         :show="showCreateAccountModal"
-        @close-account-create-modal="closeCreateAccountModal"
+        @closeAccountCreateModal="closeCreateAccountModal"
       />
       <WootKeyShortcutModal
-        v-model:show="showShortcutModal"
+        :show.sync="showShortcutModal"
         @close="closeKeyShortcutModal"
         @clickaway="closeKeyShortcutModal"
       />
@@ -214,12 +175,9 @@ export default {
         v-if="isNotificationPanel"
         @close="closeNotificationPanel"
       />
-      <woot-modal
-        v-model:show="showAddLabelModal"
-        :on-close="hideAddLabelPopup"
-      >
+      <woot-modal :show.sync="showAddLabelModal" :on-close="hideAddLabelPopup">
         <AddLabelModal @close="hideAddLabelPopup" />
       </woot-modal>
-    </main>
+    </section>
   </div>
 </template>

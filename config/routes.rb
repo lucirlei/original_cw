@@ -90,6 +90,7 @@ Rails.application.routes.draw do
               resources :messages, only: [:index, :create, :destroy] do
                 member do
                   post :translate
+                  post :forward
                   post :retry
                 end
               end
@@ -219,8 +220,7 @@ Rails.application.routes.draw do
             resources :apps, only: [:index, :show]
             resource :captain, controller: 'captain', only: [] do
               collection do
-                post :proxy
-                post :copilot
+                get :sso_url
               end
             end
             resources :hooks, only: [:show, :create, :update, :destroy] do

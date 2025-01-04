@@ -5,7 +5,7 @@ import { useUISettings } from 'dashboard/composables/useUISettings';
 import { clearCookiesOnLogout } from 'dashboard/store/utils/api.js';
 import { copyTextToClipboard } from 'shared/helpers/clipboard';
 import { parseAPIErrorResponse } from 'dashboard/store/utils/api';
-import globalConfigMixin from 'shared/mixins/globalConfigMixin';
+import { useGlobalConfig } from 'shared/composables/useGlobalConfig';
 import UserProfilePicture from './UserProfilePicture.vue';
 import UserBasicDetails from './UserBasicDetails.vue';
 import MessageSignature from './MessageSignature.vue';
@@ -34,8 +34,8 @@ export default {
     AudioNotifications,
     AccessToken,
   },
-  mixins: [globalConfigMixin],
   setup() {
+    const { useInstallationName } = useGlobalConfig();
     const { uiSettings, updateUISettings, isEditorHotKeyEnabled } =
       useUISettings();
 
@@ -43,6 +43,7 @@ export default {
       uiSettings,
       updateUISettings,
       isEditorHotKeyEnabled,
+      useInstallationName,
     };
   },
   data() {
@@ -190,6 +191,7 @@ export default {
       <UserProfilePicture
         :src="avatarUrl"
         :name="name"
+        size="72px"
         @change="updateProfilePicture"
         @delete="deleteProfilePicture"
       />
@@ -198,7 +200,7 @@ export default {
         :display-name="displayName"
         :email="email"
         :email-enabled="!globalConfig.disableUserProfileUpdate"
-        @update-user="updateProfile"
+        @updateUser="updateProfile"
       />
     </div>
 
@@ -208,7 +210,7 @@ export default {
     >
       <MessageSignature
         :message-signature="messageSignature"
-        @update-signature="updateSignature"
+        @updateSignature="updateSignature"
       />
     </FormSection>
     <FormSection
@@ -265,7 +267,7 @@ export default {
         )
       "
     >
-      <AccessToken :value="currentUser.access_token" @on-copy="onCopyToken" />
+      <AccessToken :value="currentUser.access_token" @onCopy="onCopyToken" />
     </FormSection>
   </div>
 </template>

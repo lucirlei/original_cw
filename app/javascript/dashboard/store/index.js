@@ -1,4 +1,5 @@
-import { createStore } from 'vuex';
+import Vue from 'vue';
+import Vuex from 'vuex';
 
 import accounts from './modules/accounts';
 import agentBots from './modules/agentBots';
@@ -45,10 +46,12 @@ import userNotificationSettings from './modules/userNotificationSettings';
 import webhooks from './modules/webhooks';
 import draftMessages from './modules/draftMessages';
 import SLAReports from './modules/SLAReports';
+import webphone from './modules/webphone';
 
 const plugins = [];
 
-export default createStore({
+Vue.use(Vuex);
+export default new Vuex.Store({
   modules: {
     accounts,
     agentBots,
@@ -95,6 +98,7 @@ export default createStore({
     draftMessages,
     sla,
     slaReports: SLAReports,
+    webphone,
   },
   plugins,
 });

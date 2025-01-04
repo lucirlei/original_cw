@@ -38,26 +38,32 @@ export default {
     },
     menuConfig: {
       type: Object,
-      default: () => {},
+      default: () => ({}),
     },
     currentUser: {
       type: Object,
-      default: () => {},
+      default: () => ({}),
     },
     isOnChatwootCloud: {
       type: Boolean,
       default: false,
     },
   },
-  emits: ['addLabel', 'toggleAccounts'],
   computed: {
     ...mapGetters({
       isFeatureEnabledonAccount: 'accounts/isFeatureEnabledonAccount',
+      currentRole: 'getCurrentRole',
     }),
+    hasSecondaryMenu() {
+      return this.menuConfig.menuItems && this.menuConfig.menuItems.length;
+    },
     contactCustomViews() {
       return this.customViews.filter(view => view.filter_type === 'contact');
     },
     accessibleMenuItems() {
+      if (!this.currentRole) {
+        return [];
+      }
       const menuItemsFilteredByPermissions = this.menuConfig.menuItems.filter(
         menuItem => {
           const userPermissions = getUserPermissions(
@@ -77,7 +83,19 @@ export default {
         return true;
       });
     },
+
+    hideAllInboxForAgents() {
+      return (
+        this.isFeatureEnabledonAccount(
+          this.accountId,
+          'hide_all_inbox_for_agent'
+        ) && this.currentRole !== 'administrator'
+      );
+    },
     inboxSection() {
+      if (this.hideAllInboxForAgents && this.currentRole !== 'administrator') {
+        return null;
+      }
       return {
         icon: 'folder',
         label: 'INBOXES',
@@ -134,7 +152,7 @@ export default {
         icon: 'number-symbol',
         label: 'TAGGED_WITH',
         hasSubMenu: true,
-        key: 'labels',
+        key: 'label',
         newLink: this.showNewLink(FEATURE_FLAGS.TEAM_MANAGEMENT),
         newLinkTag: 'NEW_LABEL',
         toState: frontendURL(`accounts/${this.accountId}/settings/labels`),
@@ -147,7 +165,7 @@ export default {
           color: label.color,
           truncateLabel: true,
           toState: frontendURL(
-            `accounts/${this.accountId}/contacts/labels/${label.title}`
+            `accounts/${this.accountId}/labels/${label.title}/contacts`
           ),
         })),
       };
@@ -194,7 +212,7 @@ export default {
         icon: 'folder',
         label: 'CUSTOM_VIEWS_SEGMENTS',
         hasSubMenu: true,
-        key: 'segments',
+        key: 'custom_view',
         children: this.customViews
           .filter(view => view.filter_type === 'contact')
           .map(view => ({
@@ -202,7 +220,7 @@ export default {
             label: view.name,
             truncateLabel: true,
             toState: frontendURL(
-              `accounts/${this.accountId}/contacts/segments/${view.id}`
+              `accounts/${this.accountId}/contacts/custom_view/${view.id}`
             ),
           })),
       };
@@ -220,8 +238,8 @@ export default {
         contactMenuItems = [this.contactSegmentsSection, ...contactMenuItems];
       }
       return {
-        conversations: conversationMenuItems,
-        contacts: contactMenuItems,
+        conversations: conversationMenuItems.filter(item => item !== null),
+        contacts: contactMenuItems.filter(item => item !== null),
       };
     },
   },
@@ -241,13 +259,14 @@ export default {
 
 <template>
   <div
+    v-if="hasSecondaryMenu"
     class="flex flex-col w-48 h-full px-2 pb-8 overflow-auto text-sm bg-white border-r dark:bg-slate-900 dark:border-slate-800/50 rtl:border-r-0 rtl:border-l border-slate-50"
   >
-    <AccountContext @toggle-accounts="toggleAccountModal" />
+    <AccountContext @toggleAccounts="toggleAccountModal" />
     <transition-group
       name="menu-list"
       tag="ul"
-      class="pt-2 list-none reset-base"
+      class="pt-2 mb-0 ml-0 list-none"
     >
       <SecondaryNavItem
         v-for="menuItem in accessibleMenuItems"
@@ -258,7 +277,7 @@ export default {
         v-for="menuItem in additionalSecondaryMenuItems[menuConfig.parentNav]"
         :key="menuItem.key"
         :menu-item="menuItem"
-        @add-label="showAddLabelPopup"
+        @addLabel="showAddLabelPopup"
       />
     </transition-group>
   </div>

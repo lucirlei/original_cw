@@ -15,6 +15,7 @@ gem 'browser'
 gem 'hashie'
 gem 'jbuilder'
 gem 'kaminari'
+gem 'mutex_m'
 gem 'responders', '>= 3.1.1'
 gem 'rest-client'
 gem 'telephone_number'
@@ -49,7 +50,7 @@ gem 'aws-sdk-s3', require: false
 # original gem isn't maintained actively
 # we wanted updated version of faraday which is a dependency for slack-ruby-client
 gem 'azure-storage-blob', git: 'https://github.com/chatwoot/azure-storage-ruby', branch: 'chatwoot', require: false
-gem 'google-cloud-storage', '>= 1.48.0', require: false
+gem 'google-cloud-storage', require: false
 gem 'image_processing'
 
 ##-- gems for database --#
@@ -64,7 +65,7 @@ gem 'activerecord-import'
 gem 'dotenv-rails', '>= 3.0.0'
 gem 'foreman'
 gem 'puma'
-gem 'vite_rails'
+gem 'webpacker'
 # metrics on heroku
 gem 'barnes'
 
@@ -155,6 +156,10 @@ gem 'stripe'
 ## to populate db with sample data
 gem 'faker'
 
+gem 'phonelib', '0.7.1'
+
+gem 'coderay', '1.1.3'
+
 # Include logrange conditionally in intializer using env variable
 gem 'lograge', '~> 0.14.0', require: false
 
@@ -181,9 +186,6 @@ gem 'reverse_markdown'
 group :production do
   # we dont want request timing out in development while using byebug
   gem 'rack-timeout'
-  # for heroku autoscaling
-  gem 'judoscale-rails', require: false
-  gem 'judoscale-sidekiq', require: false
 end
 
 group :development do
@@ -207,6 +209,8 @@ group :development do
 end
 
 group :test do
+  # Cypress in rails.
+  gem 'cypress-on-rails'
   # fast cleaning of database
   gem 'database_cleaner'
   # mock http calls

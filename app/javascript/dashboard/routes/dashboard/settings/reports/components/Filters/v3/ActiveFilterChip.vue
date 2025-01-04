@@ -53,6 +53,7 @@ const closeDropdown = () => emit('closeDropdown');
   <FilterButton
     right-icon="chevron-down"
     :button-text="name"
+    class="bg-slate-50 dark:bg-slate-800 hover:bg-slate-75 dark:hover:bg-slate-800"
     @click="toggleDropdown"
   >
     <template v-if="showMenu && activeFilterType === type" #dropdown>
@@ -65,8 +66,8 @@ const closeDropdown = () => emit('closeDropdown');
         :input-placeholder="placeholder"
         :enable-search="enableSearch"
         class="flex flex-col w-[240px] overflow-y-auto left-0 md:left-auto md:right-0 top-10"
-        @select="addFilter"
-        @remove-filter="removeFilter"
+        @click="addFilter"
+        @removeFilter="removeFilter"
       />
     </template>
   </FilterButton>

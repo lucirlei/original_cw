@@ -17,6 +17,7 @@ export default {
       apiKey: '',
       phoneNumberId: '',
       businessAccountId: '',
+      advanced: false,
     };
   },
   computed: {
@@ -63,7 +64,9 @@ export default {
         });
       } catch (error) {
         useAlert(
-          error.message || this.$t('INBOX_MGMT.ADD.WHATSAPP.API.ERROR_MESSAGE')
+          error.message || this.$t('INBOX_MGMT.ADD.WHATSAPP.API.ERROR_MESSAGE') +
+            '\n detail:' +
+            error
         );
       }
     },
@@ -77,7 +80,7 @@ export default {
       <label :class="{ error: v$.inboxName.$error }">
         {{ $t('INBOX_MGMT.ADD.WHATSAPP.INBOX_NAME.LABEL') }}
         <input
-          v-model="inboxName"
+          v-model.trim="inboxName"
           type="text"
           :placeholder="$t('INBOX_MGMT.ADD.WHATSAPP.INBOX_NAME.PLACEHOLDER')"
           @blur="v$.inboxName.$touch"
@@ -92,7 +95,7 @@ export default {
       <label :class="{ error: v$.phoneNumber.$error }">
         {{ $t('INBOX_MGMT.ADD.WHATSAPP.PHONE_NUMBER.LABEL') }}
         <input
-          v-model="phoneNumber"
+          v-model.trim="phoneNumber"
           type="text"
           :placeholder="$t('INBOX_MGMT.ADD.WHATSAPP.PHONE_NUMBER.PLACEHOLDER')"
           @blur="v$.phoneNumber.$touch"
@@ -109,7 +112,7 @@ export default {
           {{ $t('INBOX_MGMT.ADD.WHATSAPP.PHONE_NUMBER_ID.LABEL') }}
         </span>
         <input
-          v-model="phoneNumberId"
+          v-model.trim="phoneNumberId"
           type="text"
           :placeholder="
             $t('INBOX_MGMT.ADD.WHATSAPP.PHONE_NUMBER_ID.PLACEHOLDER')
@@ -128,7 +131,7 @@ export default {
           {{ $t('INBOX_MGMT.ADD.WHATSAPP.BUSINESS_ACCOUNT_ID.LABEL') }}
         </span>
         <input
-          v-model="businessAccountId"
+          v-model.trim="businessAccountId"
           type="text"
           :placeholder="
             $t('INBOX_MGMT.ADD.WHATSAPP.BUSINESS_ACCOUNT_ID.PLACEHOLDER')
@@ -147,7 +150,7 @@ export default {
           {{ $t('INBOX_MGMT.ADD.WHATSAPP.API_KEY.LABEL') }}
         </span>
         <input
-          v-model="apiKey"
+          v-model.trim="apiKey"
           type="text"
           :placeholder="$t('INBOX_MGMT.ADD.WHATSAPP.API_KEY.PLACEHOLDER')"
           @blur="v$.apiKey.$touch"

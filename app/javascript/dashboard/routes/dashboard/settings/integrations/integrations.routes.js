@@ -1,11 +1,12 @@
 import { frontendURL } from '../../../../helper/URLHelper';
-import SettingsWrapper from '../SettingsWrapper.vue';
-import IntegrationHooks from './IntegrationHooks.vue';
-import Index from './Index.vue';
-import Webhook from './Webhooks/Index.vue';
-import DashboardApps from './DashboardApps/Index.vue';
-import Slack from './Slack.vue';
-import SettingsContent from '../Wrapper.vue';
+const SettingsWrapper = () => import('../SettingsWrapper.vue');
+const IntegrationHooks = () => import('./IntegrationHooks.vue');
+const Index = () => import('./Index.vue');
+const Webhook = () => import('./Webhooks/Index.vue');
+const DashboardApps = () => import('./DashboardApps/Index.vue');
+const Captain = () => import('./Captain/Index.vue');
+const Slack = () => import('./Slack.vue');
+const SettingsContent = () => import('../Wrapper.vue');
 
 export default {
   routes: [
@@ -34,6 +35,14 @@ export default {
           path: 'webhook',
           component: Webhook,
           name: 'settings_integrations_webhook',
+          meta: {
+            permissions: ['administrator'],
+          },
+        },
+        {
+          path: 'captain',
+          component: Captain,
+          name: 'settings_integrations_captain',
           meta: {
             permissions: ['administrator'],
           },

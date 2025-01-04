@@ -1,3 +1,4 @@
+import Vue from 'vue';
 import types from '../../mutation-types';
 import ConversationApi from '../../../api/inbox/conversation';
 import MessageApi from '../../../api/inbox/message';
@@ -11,7 +12,8 @@ import {
 } from './helpers/actionHelpers';
 import messageReadActions from './actions/messageReadActions';
 import messageTranslateActions from './actions/messageTranslateActions';
-import * as Sentry from '@sentry/vue';
+import messageForwardActions from './actions/messageForwardActions';
+import * as Sentry from '@sentry/browser';
 
 export const hasMessageFailedWithExternalError = pendingMessage => {
   // This helper is used to check if the message has failed with an external error.
@@ -50,6 +52,7 @@ const actions = {
         data,
         params.assigneeType
       );
+      return data;
     } catch (error) {
       // Handle error
     }
@@ -195,7 +198,7 @@ const actions = {
           before: data.messages[0].id,
           conversationId: data.id,
         });
-        data.dataFetched = true;
+        Vue.set(data, 'dataFetched', true);
       } catch (error) {
         // Ignore error
       }
@@ -491,6 +494,7 @@ const actions = {
 
   ...messageReadActions,
   ...messageTranslateActions,
+  ...messageForwardActions,
 };
 
 export default actions;

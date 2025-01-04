@@ -3,15 +3,15 @@ import { useVuelidate } from '@vuelidate/core';
 import { required, minLength, email } from '@vuelidate/validators';
 import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
-import globalConfigMixin from 'shared/mixins/globalConfigMixin';
+import { useGlobalConfig } from 'shared/composables/useGlobalConfig';
 import { DEFAULT_REDIRECT_URL } from 'dashboard/constants/globals';
-import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
+import VueHcaptcha from '@hcaptcha/vue-hcaptcha';
 import FormInput from '../../../../../components/Form/Input.vue';
 import SubmitButton from '../../../../../components/Button/SubmitButton.vue';
 import { isValidPassword } from 'shared/helpers/Validators';
 import GoogleOAuthButton from '../../../../../components/GoogleOauth/Button.vue';
 import { register } from '../../../../../api/auth';
-import * as CompanyEmailValidator from 'company-email-validator';
+var CompanyEmailValidator = require('company-email-validator');
 
 export default {
   components: {
@@ -20,7 +20,12 @@ export default {
     SubmitButton,
     VueHcaptcha,
   },
-  mixins: [globalConfigMixin],
+  setup() {
+    const { useInstallationName } = useGlobalConfig();
+    return {
+      useInstallationName,
+    };
+  },
   setup() {
     return { v$: useVuelidate() };
   },
@@ -38,31 +43,29 @@ export default {
       error: '',
     };
   },
-  validations() {
-    return {
-      credentials: {
-        accountName: {
-          required,
-          minLength: minLength(2),
-        },
-        fullName: {
-          required,
-          minLength: minLength(2),
-        },
-        email: {
-          required,
-          email,
-          businessEmailValidator(value) {
-            return CompanyEmailValidator.isCompanyEmail(value);
-          },
-        },
-        password: {
-          required,
-          isValidPassword,
-          minLength: minLength(6),
+  validations: {
+    credentials: {
+      accountName: {
+        required,
+        minLength: minLength(2),
+      },
+      fullName: {
+        required,
+        minLength: minLength(2),
+      },
+      email: {
+        required,
+        email,
+        businessEmailValidator(value) {
+          return CompanyEmailValidator.isCompanyEmail(value);
         },
       },
-    };
+      password: {
+        required,
+        isValidPassword,
+        minLength: minLength(6),
+      },
+    },
   },
   computed: {
     ...mapGetters({ globalConfig: 'globalConfig/get' }),
@@ -136,9 +139,9 @@ export default {
 <template>
   <div class="flex-1 px-1 overflow-auto">
     <form class="space-y-3" @submit.prevent="submit">
-      <div class="grid grid-cols-2 gap-2">
+      <div class="flex">
         <FormInput
-          v-model="credentials.fullName"
+          v-model.trim="credentials.fullName"
           name="full_name"
           class="flex-1"
           :class="{ error: v$.credentials.fullName.$error }"
@@ -149,9 +152,9 @@ export default {
           @blur="v$.credentials.fullName.$touch"
         />
         <FormInput
-          v-model="credentials.accountName"
+          v-model.trim="credentials.accountName"
           name="account_name"
-          class="flex-1"
+          class="flex-1 ml-2"
           :class="{ error: v$.credentials.accountName.$error }"
           :label="$t('REGISTER.COMPANY_NAME.LABEL')"
           :placeholder="$t('REGISTER.COMPANY_NAME.PLACEHOLDER')"
@@ -161,7 +164,7 @@ export default {
         />
       </div>
       <FormInput
-        v-model="credentials.email"
+        v-model.trim="credentials.email"
         type="email"
         name="email_address"
         :class="{ error: v$.credentials.email.$error }"
@@ -172,7 +175,7 @@ export default {
         @blur="v$.credentials.email.$touch"
       />
       <FormInput
-        v-model="credentials.password"
+        v-model.trim="credentials.password"
         type="password"
         name="password"
         :class="{ error: v$.credentials.password.$error }"

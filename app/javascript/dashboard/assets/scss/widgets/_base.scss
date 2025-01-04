@@ -31,13 +31,7 @@ hr {
 ul,
 ol,
 dl {
-  @apply list-disc list-outside leading-[1.65];
-}
-
-ul:not(.reset-base),
-ol:not(.reset-base),
-dl:not(.reset-base) {
-  @apply mb-0;
+  @apply mb-2 list-disc list-outside leading-[1.65];
 }
 
 // Form elements

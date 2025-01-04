@@ -1,13 +1,11 @@
 import { frontendURL } from 'dashboard/helper/URLHelper';
-import InboxListView from './InboxList.vue';
-import InboxDetailView from './InboxView.vue';
-import InboxEmptyStateView from './InboxEmptyState.vue';
+const InboxListView = () => import('./InboxList.vue');
+const InboxDetailView = () => import('./InboxView.vue');
+const InboxEmptyStateView = () => import('./InboxEmptyState.vue');
 import {
   ROLES,
   CONVERSATION_PERMISSIONS,
 } from 'dashboard/constants/permissions.js';
-
-import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 
 export const routes = [
   {
@@ -20,7 +18,6 @@ export const routes = [
         component: InboxEmptyStateView,
         meta: {
           permissions: [...ROLES, ...CONVERSATION_PERMISSIONS],
-          featureFlag: FEATURE_FLAGS.INBOX_VIEW,
         },
       },
       {
@@ -29,7 +26,6 @@ export const routes = [
         component: InboxDetailView,
         meta: {
           permissions: [...ROLES, ...CONVERSATION_PERMISSIONS],
-          featureFlag: FEATURE_FLAGS.INBOX_VIEW,
         },
       },
     ],
