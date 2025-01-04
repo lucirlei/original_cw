@@ -37,9 +37,6 @@ class Messages::Facebook::MessageBuilder < Messages::Messenger::MessageBuilder
   private
 
   def build_contact_inbox
-    @contact_inbox = @inbox.contact_inboxes.find_by(source_id: @sender_id)
-    return if @contact_inbox
-    
     @contact_inbox = ::ContactInboxWithContactBuilder.new(
       source_id: @sender_id,
       inbox: @inbox,
@@ -123,7 +120,7 @@ class Messages::Facebook::MessageBuilder < Messages::Messenger::MessageBuilder
 
   def process_contact_params_result(result)
     {
-      name: result['name'] || "#{result['first_name'] || 'John'} #{result['last_name'] || 'Doe'}",
+      name: "#{result['first_name'] || 'John'} #{result['last_name'] || 'Doe'}",
       account_id: @inbox.account_id,
       avatar_url: result['profile_pic']
     }

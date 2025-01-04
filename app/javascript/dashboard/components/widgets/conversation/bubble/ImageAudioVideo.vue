@@ -20,20 +20,12 @@ export default {
       type: Object,
       required: true,
     },
-    urlType: {
-      type: String,
-      required: false,
-      default: 'data_url',
-    },
   },
+  emits: ['error'],
   data() {
     return {
       show: false,
       isImageError: false,
-      isImageErrorDelay: false,
-      retryCount: 0,
-      maxRetries: 5,
-      retryDelay: 500,
     };
   },
   computed: {
@@ -68,7 +60,7 @@ export default {
       return attachments;
     },
     dataUrl() {
-      return this.attachment[this.urlType];
+      return this.attachment.data_url;
     },
     imageWidth() {
       return this.attachment.width ? `${this.attachment.width}px` : 'auto';
@@ -93,23 +85,9 @@ export default {
       }
       this.show = true;
     },
-    onImgError(e) {
-      if (this.retryCount < this.maxRetries) {
-        setTimeout(() => {
-          e.target.src = this.attachment.data_url;
-          this.retryCount++;
-        }, this.retryDelay);
-      } else {
-        console.error(`Failed to load image after ${this.maxRetries} attempts.`);
-        this.isImageError = true;
-        this.$emit('error');
-      }
-    },
-    onImgErrorDelay() {
-      setTimeout(() => {
-        this.isImageErrorDelay = true;
-        this.$emit('error');
-      }, 1000);
+    onImgError() {
+      this.isImageError = true;
+      this.$emit('error');
     },
   },
 };
@@ -121,15 +99,6 @@ export default {
       v-if="isImage && !isImageError"
       class="bg-woot-200 dark:bg-woot-900"
       :src="dataUrl"
-      :width="imageWidth"
-      :height="imageHeight"
-      @click="onClick"
-      @error="onImgErrorDelay"
-    />
-    <img
-      v-else-if="isImageErrorDelay && !isImageError"
-      class="bg-woot-200 dark:bg-woot-900"
-      :src="`${dataUrl}?t=${Date.now()}`"
       :width="imageWidth"
       :height="imageHeight"
       @click="onClick"
@@ -148,7 +117,7 @@ export default {
     </audio>
     <GalleryView
       v-if="show"
-      :show.sync="show"
+      v-model:show="show"
       :attachment="attachment"
       :all-attachments="filteredCurrentChatAttachments"
       @error="onImgError"

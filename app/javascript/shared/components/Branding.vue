@@ -1,5 +1,5 @@
 <script>
-import { useGlobalConfig } from 'shared/composables/useGlobalConfig';
+import globalConfigMixin from 'shared/mixins/globalConfigMixin';
 
 const {
   LOGO_THUMBNAIL: logoThumbnail,
@@ -8,17 +8,12 @@ const {
 } = window.globalConfig || {};
 
 export default {
+  mixins: [globalConfigMixin],
   props: {
     disableBranding: {
       type: Boolean,
       default: false,
     },
-  },
-  setup() {
-    const { useInstallationName } = useGlobalConfig();
-    return {
-      useInstallationName,
-    };
   },
   data() {
     return {
@@ -74,7 +69,7 @@ export default {
 </template>
 
 <style scoped lang="scss">
-@import '~widget/assets/scss/variables.scss';
+@import 'widget/assets/scss/variables.scss';
 
 .branding--image {
   margin-right: $space-smaller;

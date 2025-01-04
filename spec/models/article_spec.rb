@@ -33,9 +33,9 @@ RSpec.describe Article do
       end
 
       it 'invalid when crossed the limit' do
-        article.content = 'a' * 40_001
+        article.content = 'a' * 25_001
         article.valid?
-        expect(article.errors[:content]).to include('is too long (maximum is 40000 characters)')
+        expect(article.errors[:content]).to include('is too long (maximum is 20000 characters)')
       end
     end
   end
@@ -54,7 +54,7 @@ RSpec.describe Article do
     it 'adds locale to article from portal' do
       article = create(:article, content: 'This is the content', description: 'this is the description',
                                  slug: 'this-is-title', title: 'this is title',
-                                 portal_id: portal.id, author_id: user.id)
+                                 portal_id: portal.id, author_id: user.id, locale: '')
       expect(article.locale).to eq(portal.default_locale)
     end
   end

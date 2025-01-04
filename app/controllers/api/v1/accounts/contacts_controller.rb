@@ -14,7 +14,7 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
   before_action :check_authorization
   before_action :set_current_page, only: [:index, :active, :search, :filter]
   before_action :fetch_contact, only: [:show, :update, :destroy, :avatar, :contactable_inboxes, :destroy_custom_attributes]
-  before_action :set_include_contact_inboxes, only: [:index, :search, :filter]
+  before_action :set_include_contact_inboxes, only: [:index, :search, :filter, :show, :update]
 
   def index
     @contacts_count = resolved_contacts.count
@@ -68,6 +68,7 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
     @contacts = fetch_contacts(contacts)
   rescue CustomExceptions::CustomFilter::InvalidAttribute,
          CustomExceptions::CustomFilter::InvalidOperator,
+         CustomExceptions::CustomFilter::InvalidQueryOperator,
          CustomExceptions::CustomFilter::InvalidValue => e
     render_could_not_create_error(e.message)
   end
@@ -94,13 +95,7 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
 
   def update
     @contact.assign_attributes(contact_update_params)
-    # 'Channel::TwilioSms', 'Channel::Whatsapp', 'Channel::Sms'
-    Contact.transaction do
-      @contact.contact_inboxes
-        .select{ |ci| ['Channel::Whatsapp'].include?(ci.inbox.channel_type) }
-        .each{ |ci| ci.update_attribute(:source_id, @contact.phone_number.delete('+').to_s) }
-      @contact.save!
-    end
+    @contact.save!
     process_avatar_from_url
   end
 

@@ -15,16 +15,12 @@ class ContactInboxWithContactBuilder
 
   def find_or_create_contact_and_contact_inbox
     @contact_inbox = inbox.contact_inboxes.find_by(source_id: source_id) if source_id.present?
-    if @contact_inbox
-      update_contact_avatar(@contact_inbox.contact) unless @contact_inbox.contact.avatar.attached?
-      return @contact_inbox
-    end
+    return @contact_inbox if @contact_inbox
 
     ActiveRecord::Base.transaction(requires_new: true) do
       build_contact_with_contact_inbox
-      update_contact_avatar(@contact) unless @contact.avatar.attached?
     end
-
+    update_contact_avatar(@contact) unless @contact.avatar.attached?
     @contact_inbox
   end
 

@@ -3,16 +3,16 @@ import { useVuelidate } from '@vuelidate/core';
 import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
 import { required, minLength, email } from '@vuelidate/validators';
-import { useGlobalConfig } from 'shared/composables/useGlobalConfig';
+import globalConfigMixin from 'shared/mixins/globalConfigMixin';
 import FormInput from '../../../../components/Form/Input.vue';
 import { resetPassword } from '../../../../api/auth';
 import SubmitButton from '../../../../components/Button/SubmitButton.vue';
 
 export default {
   components: { FormInput, SubmitButton },
+  mixins: [globalConfigMixin],
   setup() {
-    const { useInstallationName } = useGlobalConfig();
-    return { v$: useVuelidate(), useInstallationName };
+    return { v$: useVuelidate() };
   },
   data() {
     return {
@@ -27,14 +27,16 @@ export default {
   computed: {
     ...mapGetters({ globalConfig: 'globalConfig/get' }),
   },
-  validations: {
-    credentials: {
-      email: {
-        required,
-        email,
-        minLength: minLength(4),
+  validations() {
+    return {
+      credentials: {
+        email: {
+          required,
+          email,
+          minLength: minLength(4),
+        },
       },
-    },
+    };
   },
   methods: {
     showAlertMessage(message) {
@@ -66,7 +68,7 @@ export default {
 
 <template>
   <div
-    class="flex flex-col justify-center w-full min-h-full py-12 bg-woot-25 sm:px-6 lg:px-8 dark:bg-slate-900"
+    class="flex flex-col justify-center w-full min-h-screen py-12 bg-woot-25 sm:px-6 lg:px-8 dark:bg-slate-900"
   >
     <form
       class="bg-white shadow sm:mx-auto sm:w-full sm:max-w-lg dark:bg-slate-800 p-11 sm:shadow-lg sm:rounded-lg"
@@ -89,7 +91,7 @@ export default {
       </p>
       <div class="space-y-5">
         <FormInput
-          v-model.trim="credentials.email"
+          v-model="credentials.email"
           name="email_address"
           :has-error="v$.credentials.email.$error"
           :error-message="$t('RESET_PASSWORD.EMAIL.ERROR')"

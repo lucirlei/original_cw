@@ -96,12 +96,10 @@ class ActionCableConnector extends BaseActionCableConnector {
     } = data;
     DashboardAudioNotificationHelper.onNewMessage(data);
     this.app.$store.dispatch('addMessage', data);
-    if (lastActivityAt && conversationId) {
-      this.app.$store.dispatch('updateConversationLastActivity', {
-        lastActivityAt,
-        conversationId,
-      });
-    }
+    this.app.$store.dispatch('updateConversationLastActivity', {
+      lastActivityAt,
+      conversationId,
+    });
   };
 
   // eslint-disable-next-line class-methods-use-this
@@ -203,7 +201,7 @@ class ActionCableConnector extends BaseActionCableConnector {
 }
 
 export default {
-  init(pubsubToken) {
-    return new ActionCableConnector(window.WOOT, pubsubToken);
+  init(store, pubsubToken) {
+    return new ActionCableConnector({ $store: store }, pubsubToken);
   },
 };

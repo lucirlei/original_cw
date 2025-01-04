@@ -212,21 +212,18 @@ RSpec.describe 'Conversation Messages API', type: :request do
                as: :json
 
         expect(response).to have_http_status(:success)
-        expect(message.reload.content).to eq '⛔This message was deleted\nIncoming Message'
+        expect(message.reload.content).to eq 'This message was deleted'
         expect(message.reload.deleted).to be true
         expect(message.reload.content_attributes['bcc_emails']).to be_nil
       end
-    end
 
-    context 'when the message is not allowed to be deleted by an agent' do
-      let(:agent) { create(:user, account: account, role: :agent) }
+      it 'deletes interactive messages' do
+        interactive_message = create(
+          :message, message_type: :outgoing, content: 'test', content_type: 'input_select',
+                    content_attributes: { 'items' => [{ 'title' => 'test', 'value' => 'test' }] },
+                    conversation: conversation
+        )
 
-      before do
-        create(:inbox_member, inbox: conversation.inbox, user: agent)
-        conversation.inbox.update(allow_agent_to_delete_message: false)
-      end
-
-      it 'returns bad request error' do
         delete "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/messages/#{interactive_message.id}",
                headers: agent.create_new_auth_token,
                as: :json
@@ -236,40 +233,6 @@ RSpec.describe 'Conversation Messages API', type: :request do
       end
     end
 
-    context 'when the message is allowed to be deleted by an agent' do
-      let(:agent) { create(:user, account: account, role: :agent) }
-
-      before do
-        create(:inbox_member, inbox: conversation.inbox, user: agent)
-        conversation.inbox.update(allow_agent_to_delete_message: true)
-      end
-
-      it 'returns success' do
-        delete "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/messages/#{message.id}",
-               headers: agent.create_new_auth_token,
-               as: :json
-
-        expect(response).to have_http_status(:ok)
-      end
-    end
-
-    context 'when the message is allowed to be deleted by an adminstrator' do
-      let(:admin) { create(:user, account: account, role: :administrator) }
-
-      before do
-        create(:inbox_member, inbox: conversation.inbox, user: admin)
-        conversation.inbox.update(allow_agent_to_delete_message: false)
-      end
-
-      it 'returns success' do
-        delete "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/messages/#{message.id}",
-               headers: admin.create_new_auth_token,
-               as: :json
-
-        expect(response).to have_http_status(:ok)
-      end
-    end
-  
     context 'when the message id is invalid' do
       let(:agent) { create(:user, account: account, role: :agent) }
 

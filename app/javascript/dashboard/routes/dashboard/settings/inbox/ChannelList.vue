@@ -3,19 +3,14 @@ import ChannelItem from 'dashboard/components/widgets/ChannelItem.vue';
 import router from '../../../index';
 import PageHeader from '../SettingsSubPageHeader.vue';
 import { mapGetters } from 'vuex';
-import { useGlobalConfig } from 'shared/composables/useGlobalConfig';
+import globalConfigMixin from 'shared/mixins/globalConfigMixin';
 
 export default {
   components: {
     ChannelItem,
     PageHeader,
   },
-  setup() {
-    const { useInstallationName } = useGlobalConfig();
-    return {
-      useInstallationName,
-    };
-  },
+  mixins: [globalConfigMixin],
   data() {
     return {
       enabledFeatures: {},
@@ -56,8 +51,8 @@ export default {
     },
     initChannelAuth(channel) {
       const params = {
-        page: 'new',
         sub_page: channel,
+        accountId: this.accountId,
       };
       router.push({ name: 'settings_inboxes_page_channel', params });
     },
@@ -87,7 +82,7 @@ export default {
         :key="channel.key"
         :channel="channel"
         :enabled-features="enabledFeatures"
-        @channelItemClick="initChannelAuth"
+        @channel-item-click="initChannelAuth"
       />
     </div>
   </div>

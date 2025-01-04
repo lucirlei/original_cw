@@ -122,9 +122,9 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   end
 
   def inbox_attributes
-    [:name, :avatar, :greeting_enabled, :greeting_message, :enable_email_collect, :csat_survey_enabled, :csat_response_visible,
+    [:name, :avatar, :greeting_enabled, :greeting_message, :enable_email_collect, :csat_survey_enabled,
      :enable_auto_assignment, :working_hours_enabled, :out_of_office_message, :timezone, :allow_messages_after_resolved,
-     :lock_to_single_conversation, :portal_id, :sender_name_type, :business_name, :allow_agent_to_delete_message, :external_token]
+     :lock_to_single_conversation, :portal_id, :sender_name_type, :business_name]
   end
 
   def permitted_params(channel_attributes = [])

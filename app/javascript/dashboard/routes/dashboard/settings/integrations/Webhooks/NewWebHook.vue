@@ -1,22 +1,17 @@
 <script>
 import { useAlert } from 'dashboard/composables';
-import { useGlobalConfig } from 'shared/composables/useGlobalConfig';
+import globalConfigMixin from 'shared/mixins/globalConfigMixin';
 import { mapGetters } from 'vuex';
 import WebhookForm from './WebhookForm.vue';
 
 export default {
   components: { WebhookForm },
+  mixins: [globalConfigMixin],
   props: {
     onClose: {
       type: Function,
       required: true,
     },
-  },
-  setup() {
-    const { useInstallationName } = useGlobalConfig();
-    return {
-      useInstallationName,
-    };
   },
   computed: {
     ...mapGetters({

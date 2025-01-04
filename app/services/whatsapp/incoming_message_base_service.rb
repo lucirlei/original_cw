@@ -4,10 +4,6 @@
 class Whatsapp::IncomingMessageBaseService
   include ::Whatsapp::IncomingMessageServiceHelpers
 
-  # rubocop:disable Style/ClassVars
-  @@microsecond = 0
-  # rubocop:enable Style/ClassVars
-
   pattr_initialize [:inbox!, :params!]
 
   def perform
@@ -33,17 +29,12 @@ class Whatsapp::IncomingMessageBaseService
     return if find_message_by_source_id(@processed_params[:messages].first[:id]) || message_under_process?
 
     cache_message_source_id_in_redis
+    set_contact
+    return unless @contact
 
-    begin
-      set_message_type
-      set_contact
-      return clear_message_source_id_from_redis unless @contact
-
-      set_conversation
-      create_messages
-    ensure
-      clear_message_source_id_from_redis
-    end
+    set_conversation
+    create_messages
+    clear_message_source_id_from_redis
   end
 
   def process_statuses
@@ -55,13 +46,7 @@ class Whatsapp::IncomingMessageBaseService
   end
 
   def update_message_with_status(message, status)
-    if status[:status] == 'deleted'
-      original_content = message.content
-      new_content = "#{I18n.t('conversations.messages.deleted')}\n#{original_content}"
-      message.assign_attributes(content: new_content, content_attributes: { deleted: true })
-    else
-      message.status = status[:status]
-    end
+    message.status = status[:status]
     if status[:status] == 'failed' && status[:errors].present?
       error = status[:errors]&.first
       message.external_error = "#{error[:code]}: #{error[:title]}"
@@ -97,18 +82,16 @@ class Whatsapp::IncomingMessageBaseService
     contact_params = @processed_params[:contacts]&.first
     return if contact_params.blank?
 
-    waid = brazil_phone_number?(contact_params[:wa_id]) ? normalised_brazil_mobile_number(contact_params[:wa_id]) : contact_params[:wa_id]
-    waid = processed_waid(waid)
+    waid = processed_waid(contact_params[:wa_id])
 
     contact_inbox = ::ContactInboxWithContactBuilder.new(
       source_id: waid,
       inbox: inbox,
-      contact_attributes: { name: contact_params.dig(:profile, :name), phone_number: "+#{waid}", avatar_url: contact_params.dig(:profile, :picture) }
+      contact_attributes: { name: contact_params.dig(:profile, :name), phone_number: "+#{@processed_params[:messages].first[:from]}" }
     ).perform
 
     @contact_inbox = contact_inbox
     @contact = contact_inbox.contact
-    @sender = outgoing_message_type? ? nil : contact_inbox.contact
   end
 
   def set_conversation
@@ -158,19 +141,15 @@ class Whatsapp::IncomingMessageBaseService
   end
 
   def create_message(message)
-    timestamp = message[:timestamp] ? Time.at(message[:timestamp].to_i, microsecond, :microsecond, in: 'UTC') : Time.current.utc
     @message = @conversation.messages.build(
       content: message_content(message),
       account_id: @inbox.account_id,
       inbox_id: @inbox.id,
-      message_type: @message_type,
-      sender: @sender,
+      message_type: :incoming,
+      sender: @contact,
       source_id: message[:id].to_s,
-      created_at: timestamp,
-      in_reply_to_external_id: @in_reply_to_external_id,
-      in_reply_to_interactive_id: @in_reply_to_interactive_id
+      in_reply_to_external_id: @in_reply_to_external_id
     )
-    @message
   end
 
   def attach_contact(contact)
@@ -184,17 +163,5 @@ class Whatsapp::IncomingMessageBaseService
         fallback_title: phone[:phone].to_s
       )
     end
-  end
-
-  def set_message_type
-    @message_type = :incoming
-  end
-
-  def microsecond
-    # rubocop:disable Style/ClassVars
-    @@microsecond = 0 if @@microsecond > 999_999
-    @@microsecond += 1
-    @@microsecond
-    # rubocop:enable Style/ClassVars
   end
 end

@@ -1,26 +1,26 @@
 {
   "CHAT_LIST": {
-    "LOADING": "A buscar conversas",
-    "LOAD_MORE_CONVERSATIONS": "Carregar mais conversas",
+    "LOADING": "A carregar conversas",
+    "LOAD_MORE_CONVERSATIONS": "A carregar mais conversas",
     "EOF": "Todas as conversas carregadas 🎉",
     "LIST": {
       "404": "Não há conversas ativas neste grupo."
     },
     "TAB_HEADING": "Conversas",
     "MENTION_HEADING": "Menções",
-    "UNATTENDED_HEADING": "Não atendidas",
+    "UNATTENDED_HEADING": "Por responder",
     "SEARCH": {
-      "INPUT": "Procurar por Pessoas, Chats, Respostas Guardadas .."
+      "INPUT": "Pesquisar pessoas, conversas, respostas guardadas .."
     },
-    "FILTER_ALL": "Todos",
+    "FILTER_ALL": "Todas",
     "ASSIGNEE_TYPE_TABS": {
       "me": "Minhas",
       "unassigned": "Não atribuídas",
-      "all": "Todos"
+      "all": "Todas"
     },
     "CHAT_STATUS_FILTER_ITEMS": {
       "open": {
-        "TEXT": "Aberto"
+        "TEXT": "Abertas"
       },
       "resolved": {
         "TEXT": "Resolvido"
@@ -32,19 +32,19 @@
         "TEXT": "Adiado"
       },
       "all": {
-        "TEXT": "Todos"
+        "TEXT": "Todas"
       }
     },
-    "VIEW_FILTER": "Ver",
+    "VIEW_FILTER": "Visualizar",
     "SORT_TOOLTIP_LABEL": "Ordenar conversas",
     "CHAT_SORT": {
-      "STATUS": "Estado",
+      "STATUS": "Situação",
       "ORDER_BY": "Ordenar por"
     },
     "CHAT_TIME_STAMP": {
       "CREATED": {
         "LATEST": "Criado",
-        "OLDEST": "Criado em:"
+        "OLDEST": "Criada em:"
       },
       "LAST_ACTIVITY": {
         "NOT_ACTIVE": "Última atividade:",
@@ -53,10 +53,10 @@
     },
     "SORT_ORDER_ITEMS": {
       "last_activity_at_asc": {
-        "TEXT": "Última atividade: Mais antigas primeiro"
+        "TEXT": "Última Atividade: Mais antigas primeiro"
       },
       "last_activity_at_desc": {
-        "TEXT": "Última atividade: Mais recentes primeiro"
+        "TEXT": "Última Atividade: Mais recentes primeiro"
       },
       "created_at_desc": {
         "TEXT": "Criado em: Mais recentes primeiro"
@@ -71,15 +71,15 @@
         "TEXT": "Prioridade: Mais baixa primeiro"
       },
       "waiting_since_asc": {
-        "TEXT": "Resposta Pendente: Mais longa primeiro"
+        "TEXT": "Resposta pendente: Mais longa primeiro"
       },
       "waiting_since_desc": {
-        "TEXT": "Resposta Pendente: Mais curta primeiro"
+        "TEXT": "Resposta pendente: Mais curta primeiro"
       }
     },
     "ATTACHMENTS": {
       "image": {
-        "CONTENT": "Mensagem com imagem"
+        "CONTENT": "Mensagem de imagem"
       },
       "audio": {
         "CONTENT": "Mensagem de áudio"
@@ -88,10 +88,10 @@
         "CONTENT": "Mensagem de vídeo"
       },
       "file": {
-        "CONTENT": "Anexo de ficheiro"
+        "CONTENT": "Carregar anexo"
       },
       "location": {
-        "CONTENT": "Localização"
+        "CONTENT": "Local:"
       },
       "fallback": {
         "CONTENT": "partilhou um URL"
@@ -106,26 +106,26 @@
           "LABEL": "Última atividade"
         },
         "CREATED_AT": {
-          "NAME": "Criado em",
-          "LABEL": "Criado em"
+          "NAME": "Criada em",
+          "LABEL": "Criada em"
         },
         "LAST_USER_MESSAGE_AT": {
-          "NAME": "Última mensagem do utilizador em",
+          "NAME": "Última resposta do utilizador em",
           "LABEL": "Última mensagem"
         }
       }
     },
-    "RECEIVED_VIA_EMAIL": "Recebido por email",
-    "VIEW_TWEET_IN_TWITTER": "Ver tweet no Twitter",
-    "REPLY_TO_TWEET": "Responder a este tweet",
-    "LINK_TO_STORY": "Ir para a história do Instagram",
+    "RECEIVED_VIA_EMAIL": "Recebido por e-mail",
+    "VIEW_TWEET_IN_TWITTER": "Ver mensagem no Twitter",
+    "REPLY_TO_TWEET": "Responder a esta mensagem",
+    "LINK_TO_STORY": "Ir para story do instagram",
     "SENT": "Enviado com sucesso",
     "READ": "Lido com sucesso",
     "DELIVERED": "Entregue com sucesso",
     "NO_MESSAGES": "Sem mensagens",
     "NO_CONTENT": "Sem conteúdo disponível",
-    "HIDE_QUOTED_TEXT": "Esconder texto citado",
+    "HIDE_QUOTED_TEXT": "Ocultar texto citado",
     "SHOW_QUOTED_TEXT": "Mostrar texto citado",
-    "MESSAGE_READ": "Lido"
+    "MESSAGE_READ": "Lida"
   }
 }

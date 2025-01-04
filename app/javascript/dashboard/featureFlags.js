@@ -32,5 +32,5 @@ export const FEATURE_FLAGS = {
   LINEAR: 'linear_integration',
   CAPTAIN: 'captain_integration',
   CUSTOM_ROLES: 'custom_roles',
-  WAVOIP: 'wavoip',
+  CHATWOOT_V4: 'chatwoot_v4',
 };

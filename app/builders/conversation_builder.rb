@@ -10,10 +10,7 @@ class ConversationBuilder
   def look_up_exising_conversation
     return unless @contact_inbox.inbox.lock_to_single_conversation?
 
-    conversation = @contact_inbox.conversations.where(status: 'open').last
-    conversation = @contact_inbox.conversations.order(updated_at: :desc).first if conversation.nil?
-    conversation.update(status: 'open') if conversation.present?
-    conversation
+    @contact_inbox.conversations.last
   end
 
   def create_new_conversation
